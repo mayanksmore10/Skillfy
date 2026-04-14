@@ -1,2 +1,2 @@
-# Skillfy
+# Skillify
 

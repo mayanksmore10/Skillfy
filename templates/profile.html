@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Skillify</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar dashboard-nav">
+        <div class="container nav-container">
+            <a href="/" class="logo">Skillify<span class="dot">.</span></a>
+            <div class="nav-links">
+                <a href="/internships">Internships</a>
+                <a href="/dashboard">Skills Market</a>
+            </div>
+            <div class="nav-actions">
+                <span class="user-greeting">Hello, {{ user.name }}</span>
+                <a href="/logout" class="btn btn-outline">Log Out</a>
+                <button class="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        <div class="container">
+            <!-- Section 1 — User Header -->
+            <div class="profile-header">
+                <div class="profile-cover"></div>
+                <div class="profile-info-wrap">
+                    <div class="profile-avatar-container">
+                        <div class="profile-avatar">
+                            <div class="avatar-placeholder">{{ user.name[0] | upper }}</div>
+                        </div>
+                    </div>
+                    <div class="profile-text-header">
+                        <h1>{{ user.name }}</h1>
+                        <p class="profile-bio-short">
+                            {{ user.email }}
+                        </p>
+                        <p class="profile-bio-short">
+                            {% if resume_uploaded %}
+                            Resume Uploaded ✔
+                            {% else %}
+                            No resume uploaded yet
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-content-grid">
+                <!-- Left Column: Skills & Resume -->
+                <aside class="profile-sidebar">
+                    <!-- Section 2 — Skills -->
+                    <div class="profile-card">
+                        <h3>Skills</h3>
+                        <div class="skills-tags">
+                            {% if skills and skills|length > 0 %}
+                            {% for skill in skills %}
+                            <span class="skill-tag">{{ skill }}</span>
+                            {% endfor %}
+                            {% else %}
+                            <p class="text-muted">No skills added yet.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Section 3 — Resume Information -->
+                    <div class="profile-card">
+                        <h3>Resume Information</h3>
+
+                        {% if resume_uploaded %}
+                        <p><strong>Filename:</strong> {{ resume_filename }}</p>
+                        <p><strong>Skills Extracted:</strong> {{ skills_count }}</p>
+                        <p class="text-success small-text">
+                            Upload a new resume to refresh your skills & recommendations.
+                        </p>
+                        {% else %}
+                        <p class="text-muted">No resume uploaded yet</p>
+                        {% endif %}
+
+                        <form action="/upload-resume" method="POST" enctype="multipart/form-data"
+                            class="resume-upload-form">
+
+                            <label class="file-upload-box">
+                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                <span class="upload-text">
+                                    Click to upload or drag & drop your resume
+                                </span>
+                                <span class="upload-subtext">
+                                    PDF, DOC, DOCX (Max 5MB)
+                                </span>
+                                <input type="file" name="resume" accept=".pdf,.doc,.docx" required>
+                            </label>
+
+                            <button type="submit" class="btn btn-primary upload-btn">
+                                {% if resume_uploaded %}
+                                Replace Resume
+                                {% else %}
+                                Upload Resume
+                                {% endif %}
+                            </button>
+
+                        </form>
+                    </div>
+                </aside>
+
+                <!-- Right Column: Personal Info, Edit Form, Recommended Services -->
+                <main class="profile-main">
+                    <!-- Personal Information Card -->
+                    <div class="profile-card">
+                        <h3>Personal Information</h3>
+                        <p><strong>Name:</strong> {{ user.name }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>Phone:</strong>
+                            {{ user.phone if user.phone else "Not added" }}
+                        </p>
+                        <p><strong>Bio:</strong>
+                            {{ user.bio if user.bio else "No bio added" }}
+                        </p>
+                        <p><strong>Education:</strong>
+                            {% if profile and profile.education %}
+                            {{ profile.education }}
+                            {% else %}
+                            Not added
+                            {% endif %}
+                        </p>
+                        <p><strong>Experience Level:</strong>
+                            {% if profile and profile.experience_level %}
+                            {{ profile.experience_level }}
+                            {% else %}
+                            Not added
+                            {% endif %}
+                        </p>
+                        <p><strong>Domain Interest:</strong>
+                            {% if profile and profile.domain_interest %}
+                            {{ profile.domain_interest }}
+                            {% else %}
+                            Not added
+                            {% endif %}
+                        </p>
+                        <p><strong>Profile Completion:</strong>
+                            {% if profile and profile.profile_completion_score is not none %}
+                            {{ profile.profile_completion_score }}%
+                            {% else %}
+                            0%
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <!-- Edit Personal Information Form -->
+                    <div class="profile-card">
+                        <h3>Edit Profile</h3>
+                        <form action="/profile" method="POST" class="profile-form">
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="text" id="phone" name="phone" class="form-control"
+                                    value="{{ user.phone or '' }}" placeholder="+1 234 567 890">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="education">Education</label>
+                                <input type="text" id="education" name="education" class="form-control"
+                                    value="{% if profile and profile.education %}{{ profile.education }}{% endif %}"
+                                    placeholder="e.g., B.Tech in Computer Science">
+                            </div>
+                            <div class="form-group">
+                                <label for="experience_level">Experience Level</label>
+                                <select id="experience_level" name="experience_level" class="form-control">
+                                    <option value="">Select experience level</option>
+                                    <option value="Beginner" {% if profile and profile.experience_level=='Beginner'
+                                        %}selected{% endif %}>
+                                        Beginner</option>
+                                    <option value="Intermediate" {% if profile and
+                                        profile.experience_level=='Intermediate' %}selected{% endif %}>
+                                        Intermediate</option>
+                                    <option value="Advanced" {% if profile and profile.experience_level=='Advanced'
+                                        %}selected{% endif %}>
+                                        Advanced</option>
+                                    <option value="Expert" {% if profile and profile.experience_level=='Expert'
+                                        %}selected{% endif %}>
+                                        Expert</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="domain_interest">Domain Interest</label>
+                                <input type="text" id="domain_interest" name="domain_interest" class="form-control"
+                                    value="{% if profile and profile.domain_interest %}{{ profile.domain_interest }}{% endif %}"
+                                    placeholder="e.g., Data Science, Backend, ML">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Save Profile</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Recommended Services -->
+                    <div class="profile-card">
+                        <h3>Recommended Services</h3>
+                        {% if matched_services and matched_services|length > 0 %}
+                        <div class="services-list">
+                            {% for service in matched_services %}
+                            <div class="job-item">
+                                <div>
+                                    <h4>{{ service.job_title }}</h4>
+                                    <p class="text-muted">
+                                        Match Score: {{ service.final_match_score | round(1) }} / 100
+                                        &middot;
+                                        Gap: {{ service.gap_severity }}
+                                    </p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% elif no_skills_message %}
+                        <p class="text-muted">{{ no_skills_message }}</p>
+                        {% else %}
+                        <p class="text-muted">No recommendations available yet.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- AI Resume Enhancement Tips -->
+                    {% if resume_tips and resume_tips|length > 0 %}
+                    <div class="profile-card" id="resume-tips-card" style="border-left: 4px solid #6c63ff;">
+                        <h3>✨ AI Resume Enhancement Tips</h3>
+                        <p class="text-muted" style="margin-bottom: 1rem; font-size: 0.875rem;">
+                            Personalized suggestions based on your skills and profile — powered by AI.
+                        </p>
+                        <ul style="padding-left: 1.2rem; line-height: 1.8;">
+                            {% for tip in resume_tips %}
+                            <li style="margin-bottom: 0.5rem;">{{ tip }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 Skillify. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>
