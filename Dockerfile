@@ -11,6 +11,15 @@ RUN apt-get update && apt-get install -y \
     && apt-get update && apt-get install -y google-chrome-stable \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Install matching ChromeDriver
+RUN CHROME_VERSION=$(google-chrome-stable --version | grep -oP '\d+\.\d+\.\d+\.\d+') \
+    && CHROMEDRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_$(echo $CHROME_VERSION | cut -d. -f1)") \
+    && wget -q "https://storage.googleapis.com/chrome-for-testing-public/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip" \
+    && unzip chromedriver-linux64.zip \
+    && mv chromedriver-linux64/chromedriver /usr/bin/chromedriver \
+    && chmod +x /usr/bin/chromedriver \
+    && rm -rf chromedriver-linux64.zip chromedriver-linux64
+
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

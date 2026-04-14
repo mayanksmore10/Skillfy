@@ -213,22 +213,22 @@ def _sleep_jitter(min_s: float = 3.0, max_s: float = 8.0) -> None:
 
 
 def _init_headless_driver(user_agent: str) -> webdriver.Chrome:
-    """
-    Instantiate a headless Chrome driver with anti-detection hardening.
-    Runs in headless mode — no visible browser window.
-    """
     opts = Options()
-    opts.add_argument("--headless=new")          # true headless (Chrome ≥ 112)
+    opts.add_argument("--headless=new")
     opts.add_argument("--disable-gpu")
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--window-size=1920,1080")
     opts.add_argument(f"--user-agent={user_agent}")
-    # Suppress webdriver automation flags
+    opts.add_argument("--disable-extensions")
+    opts.add_argument("--disable-software-rasterizer")
     opts.add_experimental_option("excludeSwitches", ["enable-automation"])
     opts.add_experimental_option("useAutomationExtension", False)
 
-    service = Service(ChromeDriverManager().install())
+    # Point to Chrome installed by Dockerfile
+    opts.binary_location = "/usr/bin/google-chrome-stable"
+
+    service = Service("/usr/bin/chromedriver")
     driver = webdriver.Chrome(service=service, options=opts)
     driver.set_page_load_timeout(45)
     return driver
