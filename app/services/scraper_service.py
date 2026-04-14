@@ -24,7 +24,7 @@ import time
 from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple
 from urllib.parse import quote_plus, urljoin, urlencode
-
+from bs4 import BeautifulSoup
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
