@@ -19,3 +19,4 @@ undetected-chromedriver
 fake-useragent
 python-dotenv==1.0.1
 pydantic==2.6.4
+scikit-learn
